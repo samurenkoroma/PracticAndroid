@@ -4,7 +4,7 @@ import com.tiun.testrunner.domain.shopItem.ShopItem
 import com.tiun.testrunner.domain.shopItem.adapters.ShopListRepository
 
 class GetShopItemById(private val shopListRepository: ShopListRepository) {
-    fun get(id: String): ShopItem {
+    fun get(id: Int): ShopItem {
         return shopListRepository.getOne(id)
     }
 }
