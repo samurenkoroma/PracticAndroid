@@ -4,16 +4,17 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.tiun.testrunner.domain.shopItem.ShopItem
 import com.tiun.testrunner.domain.shopItem.adapters.ShopListRepository
+import kotlin.random.Random
 
 object MemoryShopListRepositoryImpl : ShopListRepository {
     private var shopListLD = MutableLiveData<List<ShopItem>>()
-    private var items = mutableListOf<ShopItem>()
+    private var items = sortedSetOf<ShopItem>({o1, o2 -> o1.id.compareTo(o2.id) })
 
-    private var autoIncrementId = 1
+    private var autoIncrementId = 0
 
     init {
-        for (i in 0 until 10){
-            addItem(ShopItem("item$i", 1, true ))
+        for (i in 0 until 100) {
+            addItem(ShopItem("item$i", 1, Random.nextBoolean()))
         }
     }
 
@@ -47,7 +48,7 @@ object MemoryShopListRepositoryImpl : ShopListRepository {
         return shopListLD
     }
 
-    private fun updateList(){
+    private fun updateList() {
         shopListLD.value = items.toList()
     }
 }
