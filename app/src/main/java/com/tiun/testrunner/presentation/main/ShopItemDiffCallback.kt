@@ -1,4 +1,4 @@
-package com.tiun.testrunner.presentation
+package com.tiun.testrunner.presentation.main
 
 import androidx.recyclerview.widget.DiffUtil
 import com.tiun.testrunner.domain.shopItem.ShopItem

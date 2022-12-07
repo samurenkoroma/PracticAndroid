@@ -1,4 +1,4 @@
-package com.tiun.testrunner.presentation
+package com.tiun.testrunner.presentation.main
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle

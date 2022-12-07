@@ -1,4 +1,4 @@
-package com.tiun.testrunner.presentation
+package com.tiun.testrunner.presentation.main
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

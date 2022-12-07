@@ -1,4 +1,4 @@
-package com.tiun.testrunner.presentation
+package com.tiun.testrunner.presentation.main
 
 import androidx.lifecycle.ViewModel
 import com.tiun.testrunner.data.MemoryShopListRepositoryImpl
