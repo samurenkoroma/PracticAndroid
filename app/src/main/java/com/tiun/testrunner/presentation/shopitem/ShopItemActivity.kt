@@ -8,7 +8,7 @@ import com.tiun.testrunner.R
 import com.tiun.testrunner.domain.shopItem.ShopItem
 import com.tiun.testrunner.presentation.fragments.ShopItemFragment
 
-class ShopItemActivity : AppCompatActivity() {
+class ShopItemActivity : AppCompatActivity(), ShopItemFragment.OnEditingFinishedListener {
     private var screenMode = MODE_UNKNOWN
     private var shopItemId = ShopItem.UNDEFINED_ID
 
@@ -19,6 +19,10 @@ class ShopItemActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             launchRightMode()
         }
+    }
+
+    override fun onEditingFinished() {
+        finish()
     }
 
     private fun launchRightMode() {
