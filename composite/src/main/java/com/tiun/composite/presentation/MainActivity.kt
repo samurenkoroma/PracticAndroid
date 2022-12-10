@@ -1,7 +1,8 @@
-package com.tiun.composite
+package com.tiun.composite.presentation
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.tiun.composite.R
 
 class MainActivity : AppCompatActivity() {
 
