@@ -9,7 +9,6 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
 import com.tiun.composite.R
 import com.tiun.composite.databinding.FragmentGameBinding
 import com.tiun.composite.domain.entity.GameResult
@@ -18,12 +17,11 @@ import com.tiun.composite.domain.entity.Level
 class GameFragment : Fragment() {
     private var _binding: FragmentGameBinding? = null
     private lateinit var level: Level
-
+    private val viewModelFactory by lazy {
+        GameViewModelFactory(requireActivity().application, level)
+    }
     private val viewModel: GameViewModel by lazy {
-        ViewModelProvider(
-            this,
-            AndroidViewModelFactory.getInstance(requireActivity().application)
-        )[GameViewModel::class.java]
+        ViewModelProvider(this, viewModelFactory)[GameViewModel::class.java]
     }
 
     private val tvOptions by lazy {
@@ -35,7 +33,6 @@ class GameFragment : Fragment() {
             add(binding.tvOption5)
             add(binding.tvOption6)
         }
-
     }
 
     private val binding: FragmentGameBinding
@@ -47,8 +44,7 @@ class GameFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentGameBinding.inflate(inflater, container, false)
         return binding.root
@@ -58,11 +54,10 @@ class GameFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         observeViewModel()
         setClickListenersToOptions()
-        viewModel.startGame(level)
     }
 
-    private fun setClickListenersToOptions(){
-        for (tvOption in tvOptions){
+    private fun setClickListenersToOptions() {
+        for (tvOption in tvOptions) {
             tvOption.setOnClickListener {
                 viewModel.choseAnswer(tvOption.text.toString().toInt())
             }
@@ -92,14 +87,14 @@ class GameFragment : Fragment() {
         viewModel.formattedTime.observe(viewLifecycleOwner) {
             binding.tvTimer.text = it
         }
-        viewModel.minPercent.observe(viewLifecycleOwner){
+        viewModel.minPercent.observe(viewLifecycleOwner) {
             binding.progressBar.secondaryProgress = it
         }
-        viewModel.gameResult.observe(viewLifecycleOwner){
+        viewModel.gameResult.observe(viewLifecycleOwner) {
             launchGameFinishedFragment(it)
         }
 
-        viewModel.progressAnswers.observe(viewLifecycleOwner){
+        viewModel.progressAnswers.observe(viewLifecycleOwner) {
             binding.tvAnswersProgress.text = it
         }
     }
@@ -114,12 +109,9 @@ class GameFragment : Fragment() {
     }
 
     private fun launchGameFinishedFragment(gameResult: GameResult) {
-        requireActivity()
-            .supportFragmentManager
-            .beginTransaction()
+        requireActivity().supportFragmentManager.beginTransaction()
             .replace(R.id.main_container, GameFinishedFragment.newInstance(gameResult))
-            .addToBackStack(null)
-            .commit()
+            .addToBackStack(null).commit()
     }
 
     override fun onDestroyView() {
