@@ -16,3 +16,5 @@ rootProject.name = "TestRunner"
 include ':app'
 include ':composite'
 include ':simplelist'
+include ':movies'
+include ':gpstracker'

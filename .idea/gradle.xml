@@ -12,6 +12,8 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/composite" />
+            <option value="$PROJECT_DIR$/gpstracker" />
+            <option value="$PROJECT_DIR$/movies" />
             <option value="$PROJECT_DIR$/simplelist" />
           </set>
         </option>
