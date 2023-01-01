@@ -2,7 +2,6 @@ package com.tiun.gpstracker
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Toast
 import com.tiun.gpstracker.databinding.ActivityMainBinding
 import com.tiun.gpstracker.fragments.MainFragment
 import com.tiun.gpstracker.fragments.SettingsFragment
@@ -16,16 +15,16 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        onButtonClicks()
+        onButtonNavClicks()
         openFragment(MainFragment.newInstance())
     }
 
-    private fun onButtonClicks() {
+    private fun onButtonNavClicks() {
         binding.bNav.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.id_home -> openFragment(MainFragment.newInstance())
                 R.id.id_tracks -> openFragment(TracksFragment.newInstance())
-                R.id.id_settings -> openFragment(SettingsFragment.newInstance())
+                R.id.id_settings -> openFragment(SettingsFragment())
             }
             true
         }

@@ -1,26 +1,43 @@
 package com.tiun.gpstracker.fragments
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import com.tiun.gpstracker.databinding.FragmentSettingsBinding
+import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
+import com.tiun.gpstracker.R
 
-
-class SettingsFragment : Fragment() {
-    private lateinit var binding: FragmentSettingsBinding
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentSettingsBinding.inflate(inflater, container, false)
-        return binding.root
+class SettingsFragment : PreferenceFragmentCompat() {
+    private lateinit var timePref: Preference
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        setPreferencesFromResource(R.xml.main_preference, rootKey)
+        init()
     }
 
-    companion object {
-        @JvmStatic
-        fun newInstance() = SettingsFragment()
+    private fun init() {
+        timePref = findPreference("update_time_key")!!
+        val changeListener = onChangeListener()
+        timePref.onPreferenceChangeListener = changeListener
+        initPrefs()
+    }
+
+    private fun initPrefs() {
+        val pref = timePref.preferenceManager.sharedPreferences
+        val title = timePref.title
+        timePref.title = generateTimeTitle(
+            title.toString(), pref?.getString("update_time_key", "3000").toString()
+        )
+    }
+
+    private fun onChangeListener(): Preference.OnPreferenceChangeListener {
+        return Preference.OnPreferenceChangeListener { pref, value ->
+            val title = pref.title.toString().substringBefore(":")
+            pref.title = generateTimeTitle(title, value.toString())
+            true
+        }
+    }
+
+    private fun generateTimeTitle(title: String, index: String): String {
+        val namesArray = resources.getStringArray(R.array.loc_time_update_name)
+        val valuesArray = resources.getStringArray(R.array.loc_time_update_value)
+        return "$title: ${namesArray[valuesArray.indexOf(index)]}"
     }
 }
