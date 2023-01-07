@@ -5,10 +5,21 @@
         <item>5 sec</item>
         <item>10 sec</item>
     </string-array>
-    <string-array  name="loc_time_update_value">
+    <string-array name="loc_time_update_value">
         <item>3000</item>
         <item>5000</item>
         <item>10000</item>
+    </string-array>
+
+    <string-array name="color_name">
+        <item>Red</item>
+        <item>Green</item>
+        <item>Blue</item>
+    </string-array>
+    <string-array name="color_value">
+        <item>#CCFF0000</item>
+        <item>#CC00FF00</item>
+        <item>#CC0000FF</item>
     </string-array>
 
 </resources>

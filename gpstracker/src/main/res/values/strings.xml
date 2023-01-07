@@ -5,6 +5,8 @@
     <string name="settings">settings</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="update_time">Update time</string>
-    <string name="update_time_summary">location update time </string>
+    <string name="update_time_summary">location update time</string>
+    <string name="color_track">Track color</string>
+    <string name="color_track_summary">Location track color</string>
     <string name="location">Location</string>
 </resources>
