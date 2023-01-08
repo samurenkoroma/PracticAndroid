@@ -2,8 +2,11 @@ package com.tiun.gpstracker.fragments
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
+import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -14,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.tiun.gpstracker.databinding.FragmentMainBinding
+import com.tiun.gpstracker.utils.DialogManager
 import com.tiun.gpstracker.utils.checkPermission
 import com.tiun.gpstracker.utils.showToast
 import org.osmdroid.config.Configuration
@@ -69,12 +73,18 @@ class MainFragment : Fragment() {
                 permissions.getOrDefault(
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     false
-                ) -> initOSM()
+                ) -> {
+                    initOSM()
+                    checkLocationEnabled()
+                }
 
                 permissions.getOrDefault(
                     Manifest.permission.ACCESS_COARSE_LOCATION,
                     false
-                ) -> initOSM()
+                ) -> {
+                    initOSM()
+                    checkLocationEnabled()
+                }
                 else -> showToast("not permission")
             }
         }
@@ -91,6 +101,7 @@ class MainFragment : Fragment() {
     private fun checkPermissionLess10() {
         if (checkPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
             initOSM()
+            checkLocationEnabled()
         } else {
             pLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
         }
@@ -102,6 +113,7 @@ class MainFragment : Fragment() {
             && checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
         ) {
             initOSM()
+            checkLocationEnabled()
         } else {
             pLauncher.launch(
                 arrayOf(
@@ -109,6 +121,24 @@ class MainFragment : Fragment() {
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 )
             )
+        }
+    }
+
+    private fun checkLocationEnabled() {
+        val lManager = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val isEnabled = lManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        if (!isEnabled) {
+            DialogManager.showLocationEnableDialog(
+                activity as AppCompatActivity,
+                object : DialogManager.Command {
+                    override fun run() {
+                        startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                    }
+
+                }
+            )
+        } else {
+            showToast("GPS enabled")
         }
     }
 

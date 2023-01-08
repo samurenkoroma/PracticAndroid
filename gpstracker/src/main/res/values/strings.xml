@@ -9,4 +9,6 @@
     <string name="color_track">Track color</string>
     <string name="color_track_summary">Location track color</string>
     <string name="location">Location</string>
+    <string name="location_dialog_title">Location disable</string>
+    <string name="location_dialog_message">Do you want enable GPS?</string>
 </resources>
