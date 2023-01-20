@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
@@ -33,6 +34,8 @@ import com.tiun.gpstracker.utils.checkPermission
 import com.tiun.gpstracker.utils.showToast
 import org.osmdroid.config.Configuration
 import org.osmdroid.library.BuildConfig
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.util.Timer
@@ -42,10 +45,11 @@ class MainFragment : Fragment() {
     private var timer: Timer? = null
     private var startTime = 0L
     private var isServiceRunning = false
+    private var firstStart = true
     private lateinit var pLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var binding: FragmentMainBinding
     private val model: MainViewModel by activityViewModels()
-
+    private var pl: Polyline? = null
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -77,6 +81,7 @@ class MainFragment : Fragment() {
             tvDistance.text = distance
             tvSpeed.text = velocity
             tvAverageSpeed.text = avVelocity
+            updatePolyline(it.geoPointsList)
         }
     }
 
@@ -95,7 +100,10 @@ class MainFragment : Fragment() {
     }
 
     private fun getAverageVelocity(distance: Float): String {
-        return String.format("%.2f", 3.6 * distance / ((System.currentTimeMillis() - startTime) / 1000))
+        return String.format(
+            "%.2f",
+            3.6 * distance / ((System.currentTimeMillis() - startTime) / 1000)
+        )
     }
 
     private fun getCurrentTrackTime(): String {
@@ -123,6 +131,12 @@ class MainFragment : Fragment() {
             activity?.stopService(Intent(activity, LocationService::class.java))
             binding.fStartStop.setImageResource(R.drawable.ic_play)
             timer?.cancel()
+            DialogManager.showSaveTrackDialog(requireContext(), object : DialogManager.Command {
+                override fun run() {
+                    showToast("save track")
+                }
+
+            })
         }
         isServiceRunning = !isServiceRunning
     }
@@ -160,6 +174,8 @@ class MainFragment : Fragment() {
     }
 
     private fun initOSM() = with(binding) {
+        pl = Polyline()
+        pl?.outlinePaint?.color = Color.GREEN
         map.controller.setZoom(20.0)
 //        map.controller.animateTo(GeoPoint(50.480063388475806, 30.42303872693609))
         val mLocProvider = GpsMyLocationProvider(activity)
@@ -169,6 +185,7 @@ class MainFragment : Fragment() {
         mLocOverlay.runOnFirstFix {
             map.overlays.clear()
             map.overlays.add(mLocOverlay)
+            map.overlays.add(pl)
         }
     }
 
@@ -265,6 +282,29 @@ class MainFragment : Fragment() {
                 receiver,
                 IntentFilter(LocationService.LOCATION_MODEL_INTENT)
             )
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        LocalBroadcastManager.getInstance(activity as AppCompatActivity)
+            .unregisterReceiver(receiver)
+    }
+
+    private fun addPoint(list: List<GeoPoint>) {
+        pl?.addPoint(list[list.size - 1])
+    }
+
+    private fun fillPolyline(list: List<GeoPoint>) {
+        list.forEach { pl?.addPoint(it) }
+    }
+
+    private fun updatePolyline(list: List<GeoPoint>) {
+        if (list.size > 1 && firstStart) {
+            fillPolyline(list)
+            firstStart = false
+        } else {
+            addPoint(list)
+        }
     }
 
     companion object {
