@@ -96,8 +96,10 @@ class LocationService : Service() {
     }
 
     private fun initLocationProvider() {
-        locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000)
-            .setMinUpdateIntervalMillis(5000).build()
+        locationRequest = LocationRequest
+            .Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
+            .setMinUpdateIntervalMillis(1000)
+            .build()
         locationProvider = LocationServices.getFusedLocationProviderClient(baseContext)
     }
 

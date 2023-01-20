@@ -19,8 +19,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.tiun.gpstracker.MainViewModel
 import com.tiun.gpstracker.R
 import com.tiun.gpstracker.databinding.FragmentMainBinding
 import com.tiun.gpstracker.domain.LocationModel
@@ -39,10 +41,10 @@ import java.util.TimerTask
 class MainFragment : Fragment() {
     private var timer: Timer? = null
     private var startTime = 0L
-    private val timeData = MutableLiveData<String>()
     private var isServiceRunning = false
     private lateinit var pLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var binding: FragmentMainBinding
+    private val model: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -58,12 +60,24 @@ class MainFragment : Fragment() {
         setOnClickListener()
         checkServiceState()
         updateTime()
+        locationUpdates()
         registerLocationReceiver()
     }
 
     private fun setOnClickListener() = with(binding) {
         val listener = onClicks()
         fStartStop.setOnClickListener(listener)
+    }
+
+    private fun locationUpdates() = with(binding) {
+        model.locationUpdates.observe(viewLifecycleOwner) {
+            val distance = "Distance: ${String.format("%.2f", it.distance)} m"
+            val velocity = "Velocity: ${String.format("%.2f", 3.6 * it.velocity)} km/h"
+            val avVelocity = "Average: ${getAverageVelocity(it.distance)} km/h"
+            tvDistance.text = distance
+            tvSpeed.text = velocity
+            tvAverageSpeed.text = avVelocity
+        }
     }
 
     private fun onClicks(): OnClickListener {
@@ -75,9 +89,13 @@ class MainFragment : Fragment() {
     }
 
     private fun updateTime() {
-        timeData.observe(viewLifecycleOwner) {
+        model.timeData.observe(viewLifecycleOwner) {
             binding.tvTime.text = it
         }
+    }
+
+    private fun getAverageVelocity(distance: Float): String {
+        return String.format("%.2f", 3.6 * distance / ((System.currentTimeMillis() - startTime) / 1000))
     }
 
     private fun getCurrentTrackTime(): String {
@@ -92,7 +110,7 @@ class MainFragment : Fragment() {
         timer?.schedule(object : TimerTask() {
             override fun run() {
                 activity?.runOnUiThread {
-                    timeData.value = getCurrentTrackTime()
+                    model.timeData.value = getCurrentTrackTime()
                 }
             }
         }, 1, 1)
@@ -142,7 +160,7 @@ class MainFragment : Fragment() {
     }
 
     private fun initOSM() = with(binding) {
-        map.controller.setZoom(10.0)
+        map.controller.setZoom(20.0)
 //        map.controller.animateTo(GeoPoint(50.480063388475806, 30.42303872693609))
         val mLocProvider = GpsMyLocationProvider(activity)
         val mLocOverlay = MyLocationNewOverlay(mLocProvider, map)
@@ -235,7 +253,7 @@ class MainFragment : Fragment() {
                 val locModel = intent.getSerializableExtra(
                     LocationService.LOCATION_MODEL_INTENT
                 ) as LocationModel
-                Log.d("TiunLocation", "Main Distance:  ${locModel.distance}")
+                model.locationUpdates.value = locModel
             }
 
         }
