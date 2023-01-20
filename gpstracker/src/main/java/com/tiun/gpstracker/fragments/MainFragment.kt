@@ -1,23 +1,29 @@
 package com.tiun.gpstracker.fragments
 
 import android.Manifest
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.tiun.gpstracker.R
 import com.tiun.gpstracker.databinding.FragmentMainBinding
+import com.tiun.gpstracker.domain.LocationModel
 import com.tiun.gpstracker.domain.LocationService
 import com.tiun.gpstracker.utils.DialogManager
 import com.tiun.gpstracker.utils.TimeUtils
@@ -52,6 +58,7 @@ class MainFragment : Fragment() {
         setOnClickListener()
         checkServiceState()
         updateTime()
+        registerLocationReceiver()
     }
 
     private fun setOnClickListener() = with(binding) {
@@ -220,6 +227,26 @@ class MainFragment : Fragment() {
         } else {
             showToast("GPS enabled")
         }
+    }
+
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == LocationService.LOCATION_MODEL_INTENT) {
+                val locModel = intent.getSerializableExtra(
+                    LocationService.LOCATION_MODEL_INTENT
+                ) as LocationModel
+                Log.d("TiunLocation", "Main Distance:  ${locModel.distance}")
+            }
+
+        }
+    }
+
+    private fun registerLocationReceiver() {
+        LocalBroadcastManager.getInstance(activity as AppCompatActivity)
+            .registerReceiver(
+                receiver,
+                IntentFilter(LocationService.LOCATION_MODEL_INTENT)
+            )
     }
 
     companion object {
