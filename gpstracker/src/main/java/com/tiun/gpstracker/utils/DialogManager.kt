@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.widget.Toast
 import com.tiun.gpstracker.R
 import com.tiun.gpstracker.databinding.SaveDialogBinding
+import com.tiun.gpstracker.db.TrackItem
 
 object DialogManager {
     fun showLocationEnableDialog(context: Context, command: Command) {
@@ -22,12 +23,15 @@ object DialogManager {
         dialog.show()
     }
 
-    fun showSaveTrackDialog(context: Context, command: Command) {
+    fun showSaveTrackDialog(context: Context, item: TrackItem?, command: Command) {
         val builder = AlertDialog.Builder(context)
         val binding = SaveDialogBinding.inflate(LayoutInflater.from(context), null, false)
         builder.setView(binding.root)
         val dialog = builder.create()
         binding.apply {
+            tvTrackTime.text = item?.time
+            tvTrackDistance.text = item?.distance.toString()
+            tvTrackVelocity.text = item?.velocity.toString()
             bSave.setOnClickListener {
                 command.run()
                 dialog.dismiss()

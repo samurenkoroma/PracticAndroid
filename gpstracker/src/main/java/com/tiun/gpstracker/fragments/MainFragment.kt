@@ -17,15 +17,15 @@ import android.view.View.OnClickListener
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.tiun.gpstracker.MainApp
 import com.tiun.gpstracker.MainViewModel
 import com.tiun.gpstracker.R
 import com.tiun.gpstracker.databinding.FragmentMainBinding
+import com.tiun.gpstracker.db.TrackItem
 import com.tiun.gpstracker.domain.LocationModel
 import com.tiun.gpstracker.domain.LocationService
 import com.tiun.gpstracker.utils.DialogManager
@@ -42,13 +42,16 @@ import java.util.Timer
 import java.util.TimerTask
 
 class MainFragment : Fragment() {
+    private var locationModel: LocationModel? = null
     private var timer: Timer? = null
     private var startTime = 0L
     private var isServiceRunning = false
     private var firstStart = true
     private lateinit var pLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var binding: FragmentMainBinding
-    private val model: MainViewModel by activityViewModels()
+    private val model: MainViewModel by activityViewModels {
+        MainViewModel.ViewModelFactory((requireContext().applicationContext as MainApp).database)
+    }
     private var pl: Polyline? = null
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -66,6 +69,9 @@ class MainFragment : Fragment() {
         updateTime()
         locationUpdates()
         registerLocationReceiver()
+        model.tracks.observe(viewLifecycleOwner) {
+            Log.d("MyTracks", it.toString())
+        }
     }
 
     private fun setOnClickListener() = with(binding) {
@@ -82,7 +88,17 @@ class MainFragment : Fragment() {
             tvSpeed.text = velocity
             tvAverageSpeed.text = avVelocity
             updatePolyline(it.geoPointsList)
+            locationModel = it
         }
+    }
+
+    private fun geoPointsToString(list: List<GeoPoint>): String {
+        val sb = StringBuilder()
+        list.forEach {
+            sb.append("${it.latitude},${it.longitude}/")
+        }
+        Log.d("MyTrack", sb.toString())
+        return sb.toString()
     }
 
     private fun onClicks(): OnClickListener {
@@ -131,14 +147,30 @@ class MainFragment : Fragment() {
             activity?.stopService(Intent(activity, LocationService::class.java))
             binding.fStartStop.setImageResource(R.drawable.ic_play)
             timer?.cancel()
-            DialogManager.showSaveTrackDialog(requireContext(), object : DialogManager.Command {
-                override fun run() {
-                    showToast("save track")
-                }
+            val track = getTrackItem()
+            DialogManager.showSaveTrackDialog(
+                requireContext(),
+                track,
+                object : DialogManager.Command {
+                    override fun run() {
+                        showToast("save track")
+                        model.insertTrack(track)
+                    }
 
-            })
+                })
         }
         isServiceRunning = !isServiceRunning
+    }
+
+    fun getTrackItem(): TrackItem {
+        return TrackItem(
+            null,
+            getCurrentTrackTime(),
+            TimeUtils.getDate(),
+            String.format("%.1f", locationModel?.distance?.div(1000) ?: 0),
+            getAverageVelocity(locationModel?.distance ?: 0.0f),
+            geoPointsToString(locationModel?.geoPointsList ?: listOf())
+        )
     }
 
     private fun checkServiceState() {
