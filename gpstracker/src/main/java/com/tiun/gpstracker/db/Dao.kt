@@ -1,5 +1,6 @@
 package com.tiun.gpstracker.db
 
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
@@ -11,4 +12,7 @@ interface Dao {
 
     @Query("SELECT * FROM track")
     fun getAllTrack(): Flow<List<TrackItem>>
+
+    @Delete
+    suspend fun deleteTrack(trackItem: TrackItem)
 }

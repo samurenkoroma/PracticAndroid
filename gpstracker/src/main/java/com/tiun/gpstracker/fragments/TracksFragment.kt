@@ -1,6 +1,7 @@
 package com.tiun.gpstracker.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,8 +12,10 @@ import com.tiun.gpstracker.MainApp
 import com.tiun.gpstracker.MainViewModel
 import com.tiun.gpstracker.databinding.FragmentTracksBinding
 import com.tiun.gpstracker.db.TrackAdapter
+import com.tiun.gpstracker.db.TrackItem
+import kotlin.math.log
 
-class TracksFragment : Fragment() {
+class TracksFragment : Fragment(), TrackAdapter.Listener {
     private lateinit var binding: FragmentTracksBinding
     private lateinit var adapter: TrackAdapter
     private val model: MainViewModel by activityViewModels {
@@ -36,12 +39,12 @@ class TracksFragment : Fragment() {
     private fun getTracks() {
         model.tracks.observe(viewLifecycleOwner) {
             adapter.submitList(it)
-            binding.tvEmpty.visibility == if (it.isEmpty()) View.VISIBLE else View.GONE
+            binding.tvEmpty.visibility = if (it.isEmpty()) View.VISIBLE else View.GONE
         }
     }
 
     private fun initRcView() = with(binding) {
-        adapter = TrackAdapter()
+        adapter = TrackAdapter(this@TracksFragment)
         rcView.layoutManager = LinearLayoutManager(requireContext())
         rcView.adapter = adapter
 
@@ -50,5 +53,10 @@ class TracksFragment : Fragment() {
     companion object {
         @JvmStatic
         fun newInstance() = TracksFragment()
+    }
+
+    override fun onClick(track: TrackItem) {
+        Log.d("MyLog", track.toString())
+        model.deleteTrack(track)
     }
 }
