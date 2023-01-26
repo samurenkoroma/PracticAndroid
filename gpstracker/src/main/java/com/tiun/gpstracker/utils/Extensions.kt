@@ -13,6 +13,7 @@ fun Fragment.openFragment(f: Fragment) {
         .supportFragmentManager
         .beginTransaction()
         .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+        .addToBackStack(null)
         .replace(R.id.placeholder, f)
         .commit()
 }

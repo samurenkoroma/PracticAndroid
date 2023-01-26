@@ -13,6 +13,7 @@ import com.tiun.gpstracker.MainViewModel
 import com.tiun.gpstracker.databinding.FragmentTracksBinding
 import com.tiun.gpstracker.db.TrackAdapter
 import com.tiun.gpstracker.db.TrackItem
+import com.tiun.gpstracker.utils.openFragment
 import kotlin.math.log
 
 class TracksFragment : Fragment(), TrackAdapter.Listener {
@@ -55,8 +56,13 @@ class TracksFragment : Fragment(), TrackAdapter.Listener {
         fun newInstance() = TracksFragment()
     }
 
-    override fun onClick(track: TrackItem) {
-        Log.d("MyLog", track.toString())
-        model.deleteTrack(track)
+    override fun onClick(track: TrackItem, type: TrackAdapter.ClickType) {
+        when (type) {
+            TrackAdapter.ClickType.DELETE -> model.deleteTrack(track)
+            TrackAdapter.ClickType.OPEN -> {
+                model.currentTrack.value = track
+                openFragment(ViewTrackFragment.newInstance())
+            }
+        }
     }
 }

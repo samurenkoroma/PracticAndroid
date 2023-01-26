@@ -24,14 +24,12 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.tiun.gpstracker.MainApp
 import com.tiun.gpstracker.MainViewModel
 import com.tiun.gpstracker.R
+import com.tiun.gpstracker.adapters.OSM
 import com.tiun.gpstracker.databinding.FragmentMainBinding
 import com.tiun.gpstracker.db.TrackItem
 import com.tiun.gpstracker.domain.LocationModel
 import com.tiun.gpstracker.domain.LocationService
-import com.tiun.gpstracker.utils.DialogManager
-import com.tiun.gpstracker.utils.TimeUtils
-import com.tiun.gpstracker.utils.checkPermission
-import com.tiun.gpstracker.utils.showToast
+import com.tiun.gpstracker.utils.*
 import org.osmdroid.config.Configuration
 import org.osmdroid.library.BuildConfig
 import org.osmdroid.util.GeoPoint
@@ -56,7 +54,7 @@ class MainFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        settingsOSM()
+        OSM.settingsOSM(requireActivity() as AppCompatActivity)
         binding = FragmentMainBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -90,15 +88,6 @@ class MainFragment : Fragment() {
             updatePolyline(it.geoPointsList)
             locationModel = it
         }
-    }
-
-    private fun geoPointsToString(list: List<GeoPoint>): String {
-        val sb = StringBuilder()
-        list.forEach {
-            sb.append("${it.latitude},${it.longitude}/")
-        }
-        Log.d("MyTrack", sb.toString())
-        return sb.toString()
     }
 
     private fun onClicks(): OnClickListener {
@@ -169,7 +158,7 @@ class MainFragment : Fragment() {
             TimeUtils.getDate(),
             String.format("%.1f", locationModel?.distance?.div(1000) ?: 0),
             getAverageVelocity(locationModel?.distance ?: 0.0f),
-            geoPointsToString(locationModel?.geoPointsList ?: listOf())
+            GeoPointUtils.geoPointsToString(locationModel?.geoPointsList ?: listOf())
         )
     }
 
@@ -197,17 +186,18 @@ class MainFragment : Fragment() {
         checkLocPermission()
     }
 
-    private fun settingsOSM() {
-        Configuration.getInstance().load(
-            activity as AppCompatActivity,
-            activity?.getSharedPreferences("osm_pref", Context.MODE_PRIVATE)
-        )
-        Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
-    }
+//    private fun settingsOSM() {
+//        Configuration.getInstance().load(
+//            activity as AppCompatActivity,
+//            activity?.getSharedPreferences("osm_pref", Context.MODE_PRIVATE)
+//        )
+//        Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
+//    }
 
     private fun initOSM() = with(binding) {
         pl = Polyline()
         pl?.outlinePaint?.color = Color.GREEN
+        pl?.outlinePaint?.strokeWidth = 100f
         map.controller.setZoom(20.0)
 //        map.controller.animateTo(GeoPoint(50.480063388475806, 30.42303872693609))
         val mLocProvider = GpsMyLocationProvider(activity)
