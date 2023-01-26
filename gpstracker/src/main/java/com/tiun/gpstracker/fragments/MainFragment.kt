@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import com.tiun.gpstracker.MainApp
 import com.tiun.gpstracker.MainViewModel
 import com.tiun.gpstracker.R
@@ -40,6 +41,7 @@ import java.util.Timer
 import java.util.TimerTask
 
 class MainFragment : Fragment() {
+    private lateinit var mLocOverlay: MyLocationNewOverlay
     private var locationModel: LocationModel? = null
     private var timer: Timer? = null
     private var startTime = 0L
@@ -75,6 +77,22 @@ class MainFragment : Fragment() {
     private fun setOnClickListener() = with(binding) {
         val listener = onClicks()
         fStartStop.setOnClickListener(listener)
+        fStartStop.setOnClickListener(listener)
+        fCenter.setOnClickListener(listener)
+    }
+
+    private fun onClicks(): OnClickListener {
+        return OnClickListener {
+            when (it.id) {
+                R.id.fStartStop -> serviceStartStop()
+                R.id.fCenter -> centralLocation()
+            }
+        }
+    }
+
+    private fun centralLocation() {
+        binding.map.controller.animateTo(mLocOverlay.myLocation)
+        mLocOverlay.enableFollowLocation()
     }
 
     private fun locationUpdates() = with(binding) {
@@ -87,14 +105,6 @@ class MainFragment : Fragment() {
             tvAverageSpeed.text = avVelocity
             updatePolyline(it.geoPointsList)
             locationModel = it
-        }
-    }
-
-    private fun onClicks(): OnClickListener {
-        return OnClickListener {
-            when (it.id) {
-                R.id.fStartStop -> serviceStartStop()
-            }
         }
     }
 
@@ -184,30 +194,28 @@ class MainFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         checkLocPermission()
+        firstStart = true
     }
 
-//    private fun settingsOSM() {
-//        Configuration.getInstance().load(
-//            activity as AppCompatActivity,
-//            activity?.getSharedPreferences("osm_pref", Context.MODE_PRIVATE)
-//        )
-//        Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
-//    }
 
     private fun initOSM() = with(binding) {
         pl = Polyline()
-        pl?.outlinePaint?.color = Color.GREEN
+        pl?.outlinePaint?.color = Color.parseColor(
+            PreferenceManager
+                .getDefaultSharedPreferences(requireContext())
+                .getString("color_key", "#CCFF0000")
+        )
         pl?.outlinePaint?.strokeWidth = 100f
         map.controller.setZoom(20.0)
 //        map.controller.animateTo(GeoPoint(50.480063388475806, 30.42303872693609))
         val mLocProvider = GpsMyLocationProvider(activity)
-        val mLocOverlay = MyLocationNewOverlay(mLocProvider, map)
+        mLocOverlay = MyLocationNewOverlay(mLocProvider, map)
         mLocOverlay.enableMyLocation()
         mLocOverlay.enableFollowLocation()
         mLocOverlay.runOnFirstFix {
             map.overlays.clear()
-            map.overlays.add(mLocOverlay)
             map.overlays.add(pl)
+            map.overlays.add(mLocOverlay)
         }
     }
 

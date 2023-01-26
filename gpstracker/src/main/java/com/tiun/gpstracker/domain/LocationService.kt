@@ -15,6 +15,7 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import com.google.android.gms.location.*
 import com.tiun.gpstracker.MainActivity
 import com.tiun.gpstracker.R
@@ -96,9 +97,12 @@ class LocationService : Service() {
     }
 
     private fun initLocationProvider() {
+        val updateInterval = PreferenceManager
+            .getDefaultSharedPreferences(this)
+            .getString("update_time_key", "1000")?.toLong() ?: 1000
         locationRequest = LocationRequest
-            .Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
-            .setMinUpdateIntervalMillis(1000)
+            .Builder(Priority.PRIORITY_HIGH_ACCURACY, updateInterval)
+            .setMinUpdateIntervalMillis(updateInterval)
             .build()
         locationProvider = LocationServices.getFusedLocationProviderClient(baseContext)
     }

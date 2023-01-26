@@ -1,5 +1,8 @@
 package com.tiun.gpstracker.utils
 
+import android.content.Context
+import android.graphics.Color
+import androidx.preference.PreferenceManager
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.Polyline
 
@@ -17,8 +20,13 @@ object GeoPointUtils {
     }
 
 
-    fun getPolyline(geoPoints: String): Polyline {
+    fun getPolyline(context: Context, geoPoints: String): Polyline {
         val polyline = Polyline()
+        polyline.outlinePaint.color = Color.parseColor(
+            PreferenceManager
+                .getDefaultSharedPreferences(context)
+                .getString("color_key", "#CCFF0000")
+        )
         geoPoints.split(POINTS_DELIMITER).forEach {
             if (it.isEmpty()) return@forEach
 
